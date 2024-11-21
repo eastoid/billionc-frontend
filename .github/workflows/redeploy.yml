@@ -64,7 +64,7 @@ jobs:
 
       - name: Deploy Docker container
         run: |
-          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_SSH_PORT }} ${{ vars.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_SSH_PORT }} ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
             echo "[run]$ set -e"; set -e
             echo "[run]$ sudo docker stop ${{ vars.CONTAINER_NAME }}"; sudo docker stop ${{ vars.CONTAINER_NAME }} || true
             echo "[run]$ sudo docker rm -f ${{ vars.CONTAINER_NAME }}"; sudo docker rm -f ${{ vars.CONTAINER_NAME }} || true

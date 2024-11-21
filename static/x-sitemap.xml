@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    
+    <!-- home -->
+    <url>
+        <loc>https://debouncewrite.com/home</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>1.00</priority>
+    </url>
+
+    <!-- faq -->
+    <url>
+        <loc>https://debouncewrite.com/faq</loc>
+        <lastmod>2024-10-30</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.95</priority>
+    </url>
+
+    <!-- technical -->
+    <url>
+        <loc>https://debouncewrite.com/technical</loc>
+        <lastmod>2024-11-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.85</priority>
+    </url>
+
+    <!-- login -->
+    <url>
+        <loc>https://debouncewrite.com/login</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.80</priority>
+    </url>
+
+    <!-- register -->
+    <url>
+        <loc>https://debouncewrite.com/register</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.75</priority>
+    </url>
+
+    <!-- privacy -->
+    <url>
+        <loc>https://debouncewrite.com/privacy</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.60</priority>
+    </url>
+
+    <!-- registration information -->
+    <url>
+        <loc>https://debouncewrite.com/registration/info</loc>
+        <lastmod>2024-11-04</lastmod>
+        <changefreq>never</changefreq>
+        <priority>0.55</priority>
+    </url>
+
+    <!-- terms -->
+    <url>
+        <loc>https://debouncewrite.com/terms</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.50</priority>
+    </url>
+
+
+    <!-- reset password -->
+    <url>
+        <loc>https://debouncewrite.com/login/reset/password</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.30</priority>
+    </url>
+
+    <!-- reset mfa -->
+    <url>
+        <loc>https://debouncewrite.com/login/reset/mfa</loc>
+        <lastmod>2024-10-07</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.30</priority>
+    </url>
+
+
+    <!-- sitemap -->
+    <url>
+        <loc>https://debouncewrite.com/sitemap</loc>
+        <lastmod>2024-11-04</lastmod>
+        <changefreq>monthly</changefreq>
+        <priority>0.10</priority>
+    </url>
+
+</urlset>

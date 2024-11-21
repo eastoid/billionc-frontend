@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+
+
+jobs:
+  redeploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: check runner configuration
+        run: |
+          echo "[#] default root location:"
+          pwd
+          echo "[#] java version before update to 21:"
+          java -version
+          echo "[#] node version:"
+          node -v
+          echo "[#] ubuntu version:"
+          lsb_release -a
+          echo "[#] docker version:"
+          docker -v
+          echo "[#] whoami:"
+          whoami
+          echo "[#] sudo whoami:"
+          sudo whoami
+
+      - name: cd to repo
+        run: |
+          cd "$GITHUB_WORKSPACE"
+          pwd
+          echo "Went to workspace ($GITHUB_WORKSPACE). Files:"
+          ls -lsha
+
+      - name: install node modules, build
+        env:
+          PUBLIC_HCAPTCHA_KEY: ${{ vars.HCAPTCHA_KEY }}
+        run: |
+          npm install
+          npm run build
+
+      - name: Log into GHCR
+        uses: docker/login-action@v3.3.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GHCR_TOKEN }}
+
+      - name: Build Docker image
+        run: docker build -t ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }} .
+
+      - name: Push Docker image
+        run: docker push ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.8.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Deploy Docker container
+        run: |
+          ssh -o StrictHostKeyChecking=no -p ${{ secrets.SERVER_SSH_PORT }} ${{ vars.SERVER_USER }}@${{ secrets.SERVER_IP }} << EOF
+            echo "[run]$ set -e"; set -e
+            echo "[run]$ sudo docker stop ${{ vars.CONTAINER_NAME }}"; sudo docker stop ${{ vars.CONTAINER_NAME }} || true
+            echo "[run]$ sudo docker rm -f ${{ vars.CONTAINER_NAME }}"; sudo docker rm -f ${{ vars.CONTAINER_NAME }} || true
+            echo "[run]$ sudo docker rmi ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}"; sudo docker rmi ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }} || true
+          
+            echo "[run]$ sudo docker pull ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}"; sudo docker pull ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}
+            echo "[run]$ sudo docker run -d --name \"${{ vars.CONTAINER_NAME }}\" ... ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}"
+            sudo docker run -d \
+              --name "${{ vars.CONTAINER_NAME }}" \
+              -p 127.0.0.1:8087:3000 \
+              --restart unless-stopped \
+              ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}
+          
+            echo "[run]$ sudo docker network connect debounce-network ${{ vars.CONTAINER_NAME }}"; sudo docker network connect debounce-network ${{ vars.CONTAINER_NAME }} || true
+          EOF

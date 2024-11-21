@@ -1,0 +1,180 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+  
+:root {
+
+    --toastBarBackground: rgb(249 115 22);
+    --toastContainerTop: 4.5rem
+
+}
+
+button {
+    @apply select-none;
+}
+
+.hover-scroll {
+    white-space: nowrap;
+    overflow: hidden;
+    position: relative;
+}
+
+.hover-scroll p {
+    display: inline-block;
+    position: relative;
+    animation: none;
+}
+
+.hover-scroll:hover p {
+    animation: scroll-text 2.5s linear infinite;
+}
+
+@keyframes scroll-text {
+    from {
+        transform: translateX(100%);
+    }
+    to {
+        transform: translateX(-100%);
+    }
+}
+
+
+/* SCROLLBAR */
+
+.scrollbar::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scrollbar::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.scrollbar::-webkit-scrollbar-thumb {
+    border-radius: 9999px;
+    background-color: #262626;
+}
+
+.scrollbar::-webkit-scrollbar-thumb:hover {
+    background-color: #404040;
+}
+
+
+.scrollbar-10::-webkit-scrollbar {
+    width: 10px;
+}
+
+.scrollbar-10::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.scrollbar-10::-webkit-scrollbar-thumb {
+    background-color: #a3a3a3;
+}
+
+.scrollbar-10::-webkit-scrollbar-thumb:hover {
+    background-color: #3b82f6;
+}
+
+/*mozilla scrollbar*/
+@-moz-document url-prefix() {
+    .scrollbar {
+        scrollbar-width: thin;
+        scrollbar-color: #262626 transparent;
+    }
+
+    .scrollbar:hover {
+        scrollbar-color: #404040 transparent;
+    }
+
+    .scrollbar-10 {
+        scrollbar-width: thin;
+        scrollbar-color: #a3a3a3 transparent;
+    }
+
+    .scrollbar-10:hover {
+        scrollbar-color: #3b82f6 transparent;
+    }
+}
+
+
+/* visual */
+.focus-outline-500 {
+    @apply outline-none focus-visible:outline-2 focus-visible:outline-[#858585] focus-visible:-outline-offset-2 disabled:focus-visible:outline-transparent;
+}
+
+.focus-underline {
+    @apply outline-none focus-visible:underline disabled:focus-visible:no-underline;
+}
+
+.focus-none:focus,
+.focus-none:focus-visible {
+    outline: none;
+    box-shadow: none;
+}
+
+
+
+/* BUTTON */
+
+.outline-button {
+    @apply bg-transparent border border-neutral-600 rounded px-6 py-2 max-w-full disabled:opacity-50 select-none hover:bg-neutral-800;
+}
+
+.outline-input-button { 
+    @apply bg-transparent border border-neutral-600 rounded px-6 py-2 max-w-full disabled:opacity-50 select-none hover:bg-neutral-800 w-[16rem];
+}
+
+.outline-input-field {
+    @apply bg-transparent border border-neutral-600 rounded px-4 py-2 max-w-full w-[16rem];
+}
+
+/* TEXT FIELD */
+
+.placeholder[placeholder]:empty:before {
+    @apply text-neutral-500 italic;
+    content: attr(placeholder);
+}
+
+/* HOMEPAGE */
+
+.home-title {
+    @apply font-medium text-[3rem] leading-none text-center;
+}
+
+.home-subtitle {
+    @apply font-medium text-[1.8rem] leading-none text-center;
+}
+
+kbd {
+    @apply bg-neutral-800 rounded-sm inline-block text-[0.85rem] font-medium leading-none py-1 px-2 whitespace-nowrap;
+}
+
+/* NOTES */
+.notelist-button {
+    @apply focus-visible:outline-none shrink-0 h-fit flex items-center justify-center rounded overflow-hidden box-border border-2 border-transparent disabled:border-neutral-500 sm:disabled:border-neutral-200   bg-neutral-900 disabled:bg-neutral-800   enabled:hover:bg-neutral-600   enabled:focus-visible:bg-neutral-800 enabled:focus-visible:underline enabled:focus-visible:border-neutral-600;
+}
+.notelist-button-text {
+    @apply whitespace-nowrap py-1 px-3 h-fit w-full text-left;
+}
+
+
+/* app internet connection */
+@keyframes pulseFade {
+    0% {
+        opacity: 0;
+    }
+    3% {
+        opacity: 1;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
+    }
+}
+
+.instantFade {
+    animation: pulseFade 3s ease-out forwards;
+}

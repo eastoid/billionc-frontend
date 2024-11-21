@@ -38,8 +38,6 @@ jobs:
           ls -lsha
 
       - name: install node modules, build
-        env:
-          PUBLIC_HCAPTCHA_KEY: ${{ vars.HCAPTCHA_KEY }}
         run: |
           npm install
           npm run build

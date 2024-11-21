@@ -74,7 +74,7 @@ jobs:
             echo "[run]$ sudo docker run -d --name \"${{ vars.CONTAINER_NAME }}\" ... ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}"
             sudo docker run -d \
               --name "${{ vars.CONTAINER_NAME }}" \
-              -p 127.0.0.1:8087:3000 \
+              -p 127.0.0.1:8088:3000 \
               --restart unless-stopped \
               ghcr.io/${{ vars.DOCKER_REPO }}:${{ github.run_number }}
           

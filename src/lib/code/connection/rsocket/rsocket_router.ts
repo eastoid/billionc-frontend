@@ -49,12 +49,23 @@ async function handle_metadata(msg: string) {
     boxes.checkedCount = checkCount
 }
 
+async function handle_notification(msg: string) {
+    console.log(`NOTIFICATION:`, msg)
+    if (msg) notification(msg)
+
+    if (msg.includes("too many session")) {
+        console.log(`TOO MANY SESSIONS - SESSION IS LIMITED`)
+        boxes.limitedSession = true
+    }
+}
+
 
 // ROUTER
 const handlers: { [key: string]: (msg: string) => Promise<void> } = {
     "sessionid": handler_sessionId,
     "mod": handler_mod,
     "metadata": handle_metadata,
+    "notification": handle_notification,
 }
 
 export async function rsocket_handleMessage(message: string, route: string): Promise<boolean> {

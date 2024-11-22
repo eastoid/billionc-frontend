@@ -17,8 +17,9 @@ let rsocket: RSocket | null = null
  * ## Connect to RSocket
  */
 let connecting = false
-export async function rsocket_connect() {
+export async function rsocket_connect(ops: { reconnecting?: boolean }) {
     if (connecting) return
+    if (boxes.limitedSession) return
     connecting = true
 
     const hostname = window.location.hostname
@@ -95,7 +96,7 @@ export async function rsocket_connect() {
         })
     } catch (e) {
         console.log(`Failed to connect rsocket:`, e)
-        notification(`Failed to connect.`)
+        if (!ops.reconnecting) notification(`Failed to connect.`)
     } finally {
         connecting = false
     }
@@ -237,6 +238,7 @@ async function loadIpToken(): Promise<string | null> {
 let reconnecting = false
 export async function rsocket_reconnect(retries: number = 60, delayMs: number = 2000) {
     if (connecting || reconnecting) return
+    if (boxes.limitedSession) return
     reconnecting = true
     console.log('Attempting to reconnect RSocket...')
 
@@ -244,10 +246,11 @@ export async function rsocket_reconnect(retries: number = 60, delayMs: number = 
         for (let attempt = 1; attempt <= retries; attempt++) {
             // Disconnect if there's an existing connection
             await rsocket_disconnect()
+            if (boxes.limitedSession) return
 
             // Attempt to connect again
             try {
-                await rsocket_connect()
+                await rsocket_connect({ reconnecting: true })
                 if (boxes.rsocket.isConnected) {
                     console.log('RSocket reconnected successfully')
                     notification('Reconnected successfully.')
@@ -267,6 +270,7 @@ export async function rsocket_reconnect(retries: number = 60, delayMs: number = 
             }
         }
 
+        if (boxes.limitedSession) return
         console.log('RSocket reconnection failed after maximum retries')
         notification('Reconnection failed after maximum retries.')
     } finally {

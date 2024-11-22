@@ -8,7 +8,7 @@
     onMount(() => {
         site.location = "boxes"
         
-        rsocket_connect()
+        rsocket_connect({})
         return () => {
             rsocket_disconnect()
         }
@@ -21,5 +21,9 @@
 
 
 <div class="w-full h-full flex">
-    <Checkboxes></Checkboxes>
+    {#if !boxes.limitedSession}
+        <Checkboxes></Checkboxes>
+    {:else}
+        <p class="text-xl m-auto">Sorry, you have too many sessions open.</p>
+    {/if}
 </div>

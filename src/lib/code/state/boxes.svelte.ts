@@ -14,6 +14,8 @@ export const boxes = (() => {
     let clickCount: number | null = $state(null)
     let checkedCount: number | null = $state(null)
 
+    let limitedSession: boolean = $state(false)
+
     return {
         get rsocket() {
             return {
@@ -59,6 +61,13 @@ export const boxes = (() => {
         },
         set checkedCount(v: typeof checkedCount) {
             checkedCount = v
+        },
+
+        get limitedSession() {
+            return limitedSession
+        },
+        set limitedSession(v: typeof limitedSession) {
+            limitedSession = v
         },
 
         get bits() { return bits },

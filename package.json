@@ -1,6 +1,6 @@
 {
-	"name": "debounce-v2",
-	"version": "0.0.1",
+	"name": "billionc",
+	"version": "1.0.0",
 	"private": true,
 	"scripts": {
 		"dev": "vite dev",

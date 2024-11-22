@@ -59,6 +59,16 @@ async function handle_notification(msg: string) {
     }
 }
 
+async function handle_userCount(msg: string) {
+    const number = parseInt(msg)
+    if (number == null) {
+        console.log(`Server sent invalid user count: `, msg)
+        return
+    }
+
+    boxes.userCount = number
+    console.log(`User count:`, number)
+}
 
 // ROUTER
 const handlers: { [key: string]: (msg: string) => Promise<void> } = {
@@ -66,6 +76,7 @@ const handlers: { [key: string]: (msg: string) => Promise<void> } = {
     "mod": handler_mod,
     "metadata": handle_metadata,
     "notification": handle_notification,
+    "users": handle_userCount,
 }
 
 export async function rsocket_handleMessage(message: string, route: string): Promise<boolean> {

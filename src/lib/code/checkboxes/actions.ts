@@ -29,17 +29,22 @@ export async function updateCheckbox(index: number, value: boolean): Promise<boo
 }
 
 
-export async function loadMetadata(): Promise<boolean> {
+export async function loadMetadata(ops: { userCount?: boolean }): Promise<boolean> {
     console.log(`Loading metadata.`)
 
-    const response = await fetch(`/api/v1/checkbox/metadata`, { method: "GET" })
+    const body = new FormData()
+    if (ops.userCount) body.append("userCount", "true")
+
+    const response = await fetch(`/api/v1/checkbox/metadata`, { method: "POST", body: body })
     const text = await response.text()
+
     if (response.status === 200) {
         const json = parseJsonOrNull(text)
 
-        if (json == null || json.clickCount == null || json.checkedCount == null) {
+        if (json == null || json.clickCount == null || json.checkedCount == null || ops.userCount && json.userCount == null) {
             boxes.clickCount = null
             boxes.checkedCount = null
+            boxes.userCount = null
             console.log(`Failed to get metadata - invalid text: `, text)
             return false
         }
@@ -49,6 +54,12 @@ export async function loadMetadata(): Promise<boolean> {
 
         boxes.clickCount = clickCount
         boxes.checkedCount = checkedCount
+
+        if (ops.userCount) {
+            const userCount = parseInt(json.userCount)
+            boxes.userCount = userCount
+        }
+
         return true
     } else {
         boxes.clickCount = null

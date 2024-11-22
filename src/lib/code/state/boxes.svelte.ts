@@ -13,6 +13,7 @@ export const boxes = (() => {
 
     let clickCount: number | null = $state(null)
     let checkedCount: number | null = $state(null)
+    let userCount: number | null = $state(null)
 
     let limitedSession: boolean = $state(false)
 
@@ -68,6 +69,13 @@ export const boxes = (() => {
         },
         set limitedSession(v: typeof limitedSession) {
             limitedSession = v
+        },
+
+        get userCount() {
+            return userCount
+        },
+        set userCount(v: typeof userCount) {
+            userCount = v
         },
 
         get bits() { return bits },

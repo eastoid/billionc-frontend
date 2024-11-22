@@ -41,7 +41,7 @@
         calculateNumbers()
         onConditionMet(() => boxes.rsocket.isConnected, () => {
             boxes_loadChunk(0)
-            loadMetadata()
+            loadMetadata({userCount: true})
         })
     })
 

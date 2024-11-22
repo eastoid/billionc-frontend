@@ -98,6 +98,7 @@
         <div class="sm:order-3 flex justify-center sm:justify-start gap-4">
             <p class="size-fit">{boxes.clickCount} clicks</p>
             <p class="size-fit">{boxes.checkedCount} checked</p>
+            <p class="size-fit">{boxes.userCount} {boxes.userCount === 1 ? 'person' : 'people'}</p>
         </div>
         <div class="sm:order-4 flex sm:justify-end">
             <button on:click={() => { site.lightMode = !site.lightMode }} class="px-2 rounded bg-neutral-800 text-neutral-100">Toggle {site.lightMode ? 'dark' : 'light'} theme</button>

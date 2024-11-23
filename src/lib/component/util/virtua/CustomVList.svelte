@@ -4,7 +4,7 @@
     import type { VListProps, VListHandle } from "virtua/svelte";
     import {remToPx} from "$lib/code/checkboxes"
     import {site} from "$lib/code/state/site.svelte"
-    import {onElementVisible} from "$lib/code/util/util.svelte"
+    import {getOrDefault, onElementVisible} from "$lib/code/util/util.svelte"
     import {boxes} from "$lib/code/state/boxes.svelte"
     import {notification} from "$lib/code/util/notification"
     import {isBreakpointActive} from "$lib/code/util/ui"
@@ -91,19 +91,19 @@
 -->
 <div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}">
     <!-- hero -->
-    <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">
-        <div class="">
+    <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 sm:grid-cols-[1fr_auto] justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">
+        <div class="sm:col-span-1">
             <h1>One billion checkboxes</h1>
         </div>
-        <div class="sm:order-3 flex justify-center sm:justify-start gap-4">
-            <p class="size-fit">{boxes.clickCount} clicks</p>
-            <p class="size-fit">{boxes.checkedCount} checked</p>
-            <p class="size-fit">{boxes.userCount} {boxes.userCount === 1 ? 'person' : 'people'}</p>
+        <div class="sm:order-3 flex justify-center sm:justify-start gap-6 xcol-span-2">
+            <p title="Global click count: {getOrDefault(boxes.clickCount, 'Unknown')}" class="size-fit">{boxes.clickCount} <span class="hidden sm:inline">☛</span><span class="sm:hidden">clicks</span></p>
+            <p title="Global boxes checked: {getOrDefault(boxes.checkedCount, 'Unknown')}" class="size-fit">{boxes.checkedCount} <span class="hidden sm:inline">✓</span><span class="sm:hidden">checked</span></p>
+            <p title="Online users: {getOrDefault(boxes.userCount, 'Unknown')}" class="size-fit">{boxes.userCount} <span class="hidden sm:inline">웃</span><span class="sm:hidden">{boxes.userCount === 1 ? 'person' : 'people'}</span></p>
         </div>
-        <div class="sm:order-4 flex sm:justify-end">
-            <button on:click={() => { site.lightMode = !site.lightMode }} class="px-2 rounded bg-neutral-800 text-neutral-100">Toggle {site.lightMode ? 'dark' : 'light'} theme</button>
+        <div class="sm:order-4 flex sm:justify-end w-fit">
+            <button on:click={() => { site.lightMode = !site.lightMode }} class="px-2 rounded bg-neutral-800 text-neutral-100"><span class="sm:hidden">Toggle</span> {site.lightMode ? 'dark' : 'light'} theme</button>
         </div>
-        <div class="flex justify-end sm:order-2">
+        <div class="flex justify-end sm:order-2 sm:col-span-1">
             <a title="Website author" target="_blank" href="https://koza.dev" class="text-neutral-500 hover:underline hover:text-blue-500" on:click|preventDefault={()=>{ notification(`it go down`) }}>By koza.dev</a>
         </div>
     </header>

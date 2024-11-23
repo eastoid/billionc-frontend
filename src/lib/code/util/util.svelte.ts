@@ -498,3 +498,7 @@ export function onElementVisible(element: HTMLElement | any, callback: () => any
 }
 
 export function usePrint(_: HTMLElement, m: [any, any]) { console.log(m[0]); return { destroy() { if (m[1]) {console.log(m[1])}} }}
+
+export function getOrDefault<T, O>(value: T | null, def: O): T | O {
+    return value ? value : def
+}

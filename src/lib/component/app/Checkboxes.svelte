@@ -10,6 +10,7 @@
 
     const CHUNK_COUNT = 5_000_000
     const BOX_COUNT = 1_000_000_000
+    const ROWS_PER = 5
 
     let vListElement: InstanceType<typeof CustomVList> & SvelteComponentTyped<any>
 
@@ -18,7 +19,7 @@
     let rowCountArray: any[] | null = $derived.by(() =>{
         if (!rowCount) return null
         let array: any[] = []
-        array.length = Math.ceil(rowCount / 2)
+        array.length = Math.ceil(rowCount / ROWS_PER)
         return array
     })
     const boxWidth = 1.25
@@ -168,6 +169,32 @@
 
 <svelte:window on:resize={debouncedResize}></svelte:window>
 
+<!-- Vlist item -->
+{#snippet row(rowIndex, perRow)}
+    {@const realIndex = rowIndex + 1}
+    <div use:onVisibleRow={rowIndex}
+         class="r"
+         class:thousand={(realIndex) % 250 === 0}
+         title={`Row ${realIndex}`}>
+        {#key rowSize}
+            {#each { length: perRow } as _, i}
+                {@const boxIndex = (rowIndex * perRow) + i}
+                {#if boxIndex < BOX_COUNT}
+                    <input on:click={() => { handleCheckboxClick(boxIndex) }}
+                           disabled={boxes.bits[boxIndex] == null}
+                           bind:checked={boxes.bits[boxIndex]}
+                           type="checkbox"
+                           class:box-millionth={(realIndex) % 1_000_000 === 0}
+                           class:box-searched={boxIndex === searchedIndex}
+                           class="box-searched"
+                           title={`${realIndex}`}
+                    />
+                {/if}
+            {/each}
+        {/key}
+    </div>
+{/snippet}
+
 {#if rowCount != null && rowSize != null && rowHeightPx && rowCountArray && boxes.rsocket.isConnected}
     <div class="fixed flex pointer-events-none w-full h-[100svh] items-end justify-end z-10 top-0 left-0 pr-[10px] text-left">
         <form class="relative w-fit flex items-center bg-neutral-200 dark:bg-neutral-800 border-t border-x border-neutral-500 dark:border-neutral-700 px-1 py-1 rounded-t-md pointer-events-auto gap-x-1" on:submit={submit_goToIndex}>
@@ -182,47 +209,16 @@
         </form>
     </div>
     
-    <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={2} itemSize={1}>
+    <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={0} itemSize={1}>
         {#snippet children(_, _index)}
             {#if listRendered}
                 {@const perRow = rowSize ?? 0}
-                {@const index = _index * 2}
-                <div use:onVisibleRow={index} class="r" class:thousand={(index + 1) % 250 === 0} title={`Row ${index + 1}`}>
-                    {#key rowSize}
-                        {#each { length: perRow } as _, i}
-                            {@const boxIndex = (index * perRow) + i}
-                            {#if boxIndex < BOX_COUNT}
-                                <input on:click={() => { handleCheckboxClick(boxIndex) }}
-                                       disabled={boxes.bits[boxIndex] == null}
-                                       bind:checked={boxes.bits[boxIndex]}
-                                       type="checkbox"
-                                       class:box-millionth={(boxIndex + 1) % 1_000_000 === 0}
-                                       class:box-searched={boxIndex === searchedIndex}
-                                       class="box-searched"
-                                       title={`${boxIndex + 1}`}
-                                />
-                            {/if}
-                        {/each}
-                    {/key}
-                </div>
-                <div use:onVisibleRow={index + 1} class="r" class:thousand={(index + 2) % 250 === 0} title={`Row ${index + 2}`}>
-                    {#key rowSize}
-                        {#each { length: perRow } as _, i}
-                            {@const boxIndex = (index * perRow) + perRow + i}
-                            {#if boxIndex < BOX_COUNT}
-                                <input on:click={() => { handleCheckboxClick(boxIndex) }}
-                                       disabled={boxes.bits[boxIndex] == null}
-                                       bind:checked={boxes.bits[boxIndex]}
-                                       type="checkbox"
-                                       class:box-millionth={(boxIndex + 1) % 1_000_000 === 0}
-                                       class:box-searched={boxIndex === searchedIndex}
-                                       class="box-searched"
-                                       title={`${boxIndex + 1}`}
-                                />
-                            {/if}
-                        {/each}
-                    {/key}
-                </div>
+                {@const baseIndex = _index * 5}
+                {@render row(baseIndex, perRow)}
+                {@render row(baseIndex + 1, perRow)}
+                {@render row(baseIndex + 2, perRow)}
+                {@render row(baseIndex + 3, perRow)}
+                {@render row(baseIndex + 4, perRow)}
             {:else}
                 <div class="p"></div>
             {/if}
@@ -303,3 +299,101 @@
         margin: 0;
     }
 </style>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<!-- NEWER VLIST ITEM - SLOW AS FUCK -->
+<!--
+{@const perRow = rowSize ?? 0}
+{#each { length: ROWS_PER } as _, rowNum}
+    {@const index = _index * ROWS_PER + rowNum}
+    <div use:onVisibleRow={index}
+         class="r"
+         class:thousand={(index + 1) % 250 === 0}
+         title={`Row ${index + 1}`}>
+        {#key rowSize}
+            {#each { length: perRow } as _, i}
+                {@const boxIndex = (index * perRow) + i}
+                {#if boxIndex < BOX_COUNT}
+                    <input on:click={() => { handleCheckboxClick(boxIndex) }}
+                           disabled={boxes.bits[boxIndex] == null}
+                           bind:checked={boxes.bits[boxIndex]}
+                           type="checkbox"
+                           class:box-millionth={(boxIndex + 1) % 1_000_000 === 0}
+                           class:box-searched={boxIndex === searchedIndex}
+                           class="box-searched"
+                           title={`${boxIndex + 1}`}
+                    />
+                {/if}
+            {/each}
+        {/key}
+    </div>
+{/each}
+ -->
+
+
+
+
+
+
+
+
+
+<!-- ORIGINAL VLIST ITEM -->
+<!--
+
+
+                {@const perRow = rowSize ?? 0}
+{@const index = _index * 2}
+<div use:onVisibleRow={index} class="r" class:thousand={(index + 1) % 250 === 0} title={`Row ${index + 1}`}>
+   {#key rowSize}
+       {#each { length: perRow } as _, i}
+           {@const boxIndex = (index * perRow) + i}
+           {#if boxIndex < BOX_COUNT}
+               <input on:click={() => { handleCheckboxClick(boxIndex) }}
+                      disabled={boxes.bits[boxIndex] == null}
+                      bind:checked={boxes.bits[boxIndex]}
+                      type="checkbox"
+                      class:box-millionth={(boxIndex + 1) % 1_000_000 === 0}
+                      class:box-searched={boxIndex === searchedIndex}
+                      class="box-searched"
+                      title={`${boxIndex + 1}`}
+               />
+           {/if}
+       {/each}
+   {/key}
+</div>
+<div use:onVisibleRow={index + 1} class="r" class:thousand={(index + 2) % 250 === 0} title={`Row ${index + 2}`}>
+   {#key rowSize}
+       {#each { length: perRow } as _, i}
+           {@const boxIndex = (index * perRow) + perRow + i}
+           {#if boxIndex < BOX_COUNT}
+               <input on:click={() => { handleCheckboxClick(boxIndex) }}
+                      disabled={boxes.bits[boxIndex] == null}
+                      bind:checked={boxes.bits[boxIndex]}
+                      type="checkbox"
+                      class:box-millionth={(boxIndex + 1) % 1_000_000 === 0}
+                      class:box-searched={boxIndex === searchedIndex}
+                      class="box-searched"
+                      title={`${boxIndex + 1}`}
+               />
+           {/if}
+       {/each}
+   {/key}
+</div>
+
+
+
+
+
+ -->

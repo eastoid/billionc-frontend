@@ -11,10 +11,14 @@
     const CHUNK_COUNT = 5_000_000
     const BOX_COUNT = 1_000_000_000
     const ROWS_PER = 5
+    const FIXED_PER_ROW = 86
 
     let vListElement: InstanceType<typeof CustomVList> & SvelteComponentTyped<any>
-
+    
+    let fixedWidth: boolean = $state(false)
+    
     let rowSize: number | null = $state(null)
+    let perRow: number | null = $derived(fixedWidth ? FIXED_PER_ROW : rowSize)
     let rowCount: number | null = $state(null)
     let rowCountArray: any[] | null = $derived.by(() =>{
         if (!rowCount) return null
@@ -36,7 +40,7 @@
     let searchPending = $state(false)
     let indexInput: number | undefined = $state()
     let searchedIndex = $derived(indexInput != null ? indexInput - 1 : null)
-    let searchedRowIndex = $derived(searchedIndex != null && rowSize != null ? Math.ceil(searchedIndex / rowSize) : null)
+    let searchedRowIndex = $derived(searchedIndex != null && perRow != null ? Math.ceil(searchedIndex / perRow) : null)
 
     onMount(() => {
         calculateNumbers()
@@ -45,17 +49,17 @@
             loadMetadata({userCount: true})
         })
     })
-
+    
     function calculateNumbers() {
         const width = window.innerWidth
         // Account for scrollbar
         const actualWidth = width - 10
 
         rowSize = boxesThatFit(boxWidth, padding, gap, actualWidth)
-        rowCount = Math.ceil(BOX_COUNT / rowSize)
+        rowCount = Math.ceil(BOX_COUNT / perRow!)
         rowHeightPx = remToPx(rowHeight)
 
-        console.log(`Checkboxes: 1000000000\nRows: ${rowCount}\nPer row: ${rowSize}\nRow px: ${rowHeightPx}`)
+        console.log(`Checkboxes: 1000000000\nRows: ${rowCount}\nPer row: ${perRow}\nRow px: ${rowHeightPx}`)
     }
 
     const debouncedResize = debounceFunction(onResize, 200, 1000)
@@ -65,7 +69,7 @@
 
 
     function onVisibleRow(_: HTMLElement, rowIndex: number) {
-        if (!rowSize) return
+        if (!perRow) return
         if (!boxes.rsocket.isConnected) {
             console.log(`onVisibleRow: RSocket is not connected.`)
             onConditionMet(() => boxes.rsocket.isConnected, () => {  onVisibleRow(_, rowIndex) })
@@ -78,15 +82,15 @@
             searchPending = false
         }
 
-        const box = Math.max(rowIndex - 1, 0) * rowSize
+        const box = Math.max(rowIndex - 1, 0) * perRow
         const chunk = chunkIndexOf(box)
         
         const timeout = setTimeout(() => { processVisibleRow(chunk) }, 100)
 
         return {
             destroy() {
-                if (rowSize) {
-                    boxes.removeRange(rowIndex * rowSize, rowSize)
+                if (perRow) {
+                    boxes.removeRange(rowIndex * perRow, perRow)
                 } else {
                     boxes.setBits({})
                 }
@@ -103,7 +107,7 @@
     }
 
     async function processVisibleRow(chunk: number) {
-        if (!rowSize || !rowCount || !vListElement) return console.log(`Failed to process visible row. Something is null.`)
+        if (!perRow || !rowCount || !vListElement) return console.log(`Failed to process visible row. Something is null.`)
 
         if (pendingChunkLoad.has(chunk)) return
         pendingChunkLoad.add(chunk)
@@ -126,8 +130,8 @@
     }
 
     function onSearchOverlayVisible() {
-        if (indexInput == null || searchedIndex == null || rowSize == null || searchedRowIndex == null) {
-            console.log(`Something is null - ${indexInput}, ${searchedIndex}, ${rowSize}, ${searchedRowIndex}`)
+        if (indexInput == null || searchedIndex == null || perRow == null || searchedRowIndex == null) {
+            console.log(`Something is null - ${indexInput}, ${searchedIndex}, ${perRow}, ${searchedRowIndex}`)
             searchPending = false
             return
         }
@@ -170,60 +174,70 @@
 <svelte:window on:resize={debouncedResize}></svelte:window>
 
 <!-- Vlist item -->
-{#snippet row(rowIndex, perRow)}
+{#snippet row(rowIndex)}
     {@const realIndex = rowIndex + 1}
+    {@const _perRow = perRow ?? 0}
     <div use:onVisibleRow={rowIndex}
          class="r"
+         class:fr={fixedWidth}
          class:thousand={(realIndex) % 250 === 0}
          title={`Row ${realIndex}`}>
-        {#key rowSize}
-            {#each { length: perRow } as _, i}
-                {@const boxIndex = (rowIndex * perRow) + i}
+        {#key perRow}
+            {#each { length: _perRow } as _, i}
+                {@const boxIndex = (rowIndex * _perRow) + i}
                 {#if boxIndex < BOX_COUNT}
                     <input on:click={() => { handleCheckboxClick(boxIndex) }}
                            disabled={boxes.bits[boxIndex] == null}
                            bind:checked={boxes.bits[boxIndex]}
                            type="checkbox"
-                           class:box-millionth={(realIndex) % 1_000_000 === 0}
                            class:box-searched={boxIndex === searchedIndex}
-                           class="box-searched"
+                           class=""
                            title={`${realIndex}`}
                     />
+                    <!-- class:box-millionth={(realIndex) % 1_000_000 === 0} -->
                 {/if}
             {/each}
         {/key}
     </div>
 {/snippet}
 
-{#if rowCount != null && rowSize != null && rowHeightPx && rowCountArray && boxes.rsocket.isConnected}
+{#if rowCount != null && perRow != null && rowHeightPx && rowCountArray && boxes.rsocket.isConnected}
     <div class="fixed flex pointer-events-none w-full h-[100svh] items-end justify-end z-10 top-0 left-0 pr-[10px] text-left">
-        <form class="relative w-fit flex items-center bg-neutral-200 dark:bg-neutral-800 border-t border-x border-neutral-500 dark:border-neutral-700 px-1 py-1 rounded-t-md pointer-events-auto gap-x-1" on:submit={submit_goToIndex}>
+        <form class="relative w-fit flex items-center bg-neutral-200 dark:bg-neutral-800 border-t border-x border-neutral-500 dark:border-neutral-700 px-1 py-1 rounded-t-md pointer-events-auto gap-x-1 h-[2rem]" on:submit={submit_goToIndex}>
+            <div title="Enable fixed width for checkboxes" class="flex gap-1 px-1 select-none">
+                <input type="checkbox" bind:checked={fixedWidth}>
+                <p>fixed</p>
+            </div>
+            
             {#if searchPending}
                 <div use:onElementVisible={onSearchOverlayVisible} class="absolute top-0 left-0 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center border-t border-x border-neutral-500 dark:border-neutral-700 size-full">
                     <p>Searching...</p>
                 </div>
             {/if}
             
-            <input required readonly={searchPending} bind:value={indexInput} max="1000000000" min="1" title="Enter checkbox number to navigate to" type="number" class="w-[13ch] px-[0.5ch] bg-transparent focus-outline-500" placeholder="12345">
+            <input required readonly={searchPending} bind:value={indexInput} max="1000000000" min="1" title="Enter checkbox number to navigate to" type="number" class="w-[13ch] h-full px-[0.5ch] bg-neutral-900 focus-outline-500" placeholder="12345">
             <button type="submit" class="hover:underline hover:text-blue-500">Go</button>
         </form>
     </div>
     
-    <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={0} itemSize={1}>
-        {#snippet children(_, _index)}
-            {#if listRendered}
-                {@const perRow = rowSize ?? 0}
-                {@const baseIndex = _index * 5}
-                {@render row(baseIndex, perRow)}
-                {@render row(baseIndex + 1, perRow)}
-                {@render row(baseIndex + 2, perRow)}
-                {@render row(baseIndex + 3, perRow)}
-                {@render row(baseIndex + 4, perRow)}
-            {:else}
-                <div class="p"></div>
-            {/if}
-        {/snippet}
-    </CustomVList>
+    <!-- <div class="w-full h-full" class:overflow-x-scroll={fixedWidth}> -->
+    <!--     <div class="h-full" style="width: {fixedWidth ? `${remToPx(((FIXED_PER_ROW - 1) * 0.125) + (FIXED_PER_ROW * 1.25)) + 10}px` : '100%'}"> -->
+            <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={0} itemSize={1}>
+                {#snippet children(_, _index)}
+                    {#if listRendered}
+                        {@const baseIndex = _index * 5}
+                        {@render row(baseIndex)}
+                        {@render row(baseIndex + 1)}
+                        {@render row(baseIndex + 2)}
+                        {@render row(baseIndex + 3)}
+                        {@render row(baseIndex + 4)}
+                    {:else}
+                        <div class="p"></div>
+                    {/if}
+                {/snippet}
+            </CustomVList>
+        <!-- </div> -->
+    <!-- </div> -->
 {:else}
     <div class="w-full flex flex-col items-center justify-center h-[100svh] gap-8">
         <div class="flex flex-col items-center">
@@ -241,6 +255,9 @@
     /* Row container */
     :global(.r) {
         @apply w-full flex gap-[0.125rem] py-[0.0625rem] justify-center h-[1.375rem];
+    }
+    :global(.fr) {
+        width: fit-content !important;
     }
     
     :global(.p) {

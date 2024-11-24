@@ -258,6 +258,7 @@
     }
     :global(.fr) {
         width: fit-content !important;
+        @apply mx-auto;
     }
     
     :global(.p) {

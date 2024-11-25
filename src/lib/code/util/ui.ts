@@ -49,3 +49,29 @@ export function isBreakpointActive(bp: Breakpoint): boolean {
 
     return currentOrder >= order
 }
+
+
+export function handleScrolling(node: HTMLElement, p: { onScrollStart: () => any, onScrollEnd: () => any }) {
+    let handled = false
+
+    function onScroll() {
+        if (handled) return
+        handled = true
+        p.onScrollStart()
+    }
+
+    function onStop() {
+        p.onScrollEnd()
+        handled = false
+    }
+
+    node.addEventListener('scroll', onScroll)
+    node.addEventListener('scrollend', onStop)
+
+    return {
+        destroy() {
+            node.removeEventListener('scroll', onScroll)
+            node.removeEventListener('scrollend', onStop)
+        }
+    }
+}

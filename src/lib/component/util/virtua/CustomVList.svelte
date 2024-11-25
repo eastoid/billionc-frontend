@@ -7,11 +7,12 @@
     import {getOrDefault, onElementVisible} from "$lib/code/util/util.svelte"
     import {boxes} from "$lib/code/state/boxes.svelte"
     import {notification} from "$lib/code/util/notification"
-    import {isBreakpointActive} from "$lib/code/util/ui"
+    import {handleScrolling, isBreakpointActive} from "$lib/code/util/ui"
 
     interface Props extends VListProps<T> {
         classes: string;
         onHeaderVisible: () => any;
+        activelyScrolling: boolean;
     }
 
     let {
@@ -26,6 +27,7 @@
         onscrollend,
         classes,
         onHeaderVisible,
+        activelyScrolling = $bindable(false),
         ...rest
     }: Props = $props();
     
@@ -83,13 +85,22 @@
     });
     
     const headerHeight = $derived(isBreakpointActive("sm") ? remToPx(4) : remToPx(2))
+    
+    function onScrollStart() {
+        activelyScrolling = true
+    }
+    
+    function onScrollEnd() {
+        activelyScrolling = false
+    }
+    
 </script>
 
 <!--
   @component
   Virtualized list component. See {@link VListProps} and {@link VListHandle}.
 -->
-<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}">
+<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" use:handleScrolling={{onScrollStart, onScrollEnd}}>
     <!-- hero -->
     <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 sm:grid-cols-[1fr_auto] justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">
         <div class="sm:col-span-1">

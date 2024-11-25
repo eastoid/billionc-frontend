@@ -4,6 +4,7 @@
     import {site} from "$lib/code/state/site.svelte"
     import {getBreakpoint} from "$lib/code/util/ui"
     import {debounceFunction} from "$lib/code/util/util.svelte"
+    import {PlausibleAnalytics} from "@accuser/svelte-plausible-analytics"
 
     onMount(() => {
         calculateBreakpoint()
@@ -32,6 +33,11 @@
 </script>
 
 <svelte:window on:resize={debouncedOnResize}></svelte:window>
+
+<PlausibleAnalytics
+        apiHost="https://plausible.phonescausebraincancer.org"
+        compat={false}
+></PlausibleAnalytics>
 
 <div id="layout-root" class="contents">
     {@render children()}

@@ -35,6 +35,7 @@
 	},
 	"type": "module",
 	"dependencies": {
+		"@accuser/svelte-plausible-analytics": "^1.0.0",
 		"@rollup/plugin-commonjs": "^28.0.0",
 		"@rsocket/core": "^1.0.0-alpha.3",
 		"@rsocket/websocket-client": "^1.0.0-alpha.3",

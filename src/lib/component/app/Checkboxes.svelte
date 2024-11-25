@@ -222,7 +222,7 @@
     
     <!-- <div class="w-full h-full" class:overflow-x-scroll={fixedWidth}> -->
     <!--     <div class="h-full" style="width: {fixedWidth ? `${remToPx(((FIXED_PER_ROW - 1) * 0.125) + (FIXED_PER_ROW * 1.25)) + 10}px` : '100%'}"> -->
-            <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={0} itemSize={1}>
+            <CustomVList {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
                 {#snippet children(_, _index)}
                     {#if listRendered}
                         {@const baseIndex = _index * 5}

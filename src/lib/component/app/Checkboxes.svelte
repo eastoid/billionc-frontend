@@ -1,7 +1,7 @@
 <script lang="ts">
     import {onMount, type SvelteComponentTyped} from "svelte"
     import {boxesThatFit, remToPx} from "$lib/code/checkboxes"
-    import {debounceFunction, onConditionMet, onElementVisible, rap, usePrint} from "$lib/code/util/util.svelte"
+    import {debounceFunction, onConditionMet, onElementVisible, printFunc, rap, usePrint} from "$lib/code/util/util.svelte"
     import CustomVList from "$lib/component/util/virtua/CustomVList.svelte"
     import {boxes_loadChunk, boxes_unsubscribeChunk} from "$lib/code/checkboxes/loading"
     import {boxes} from "$lib/code/state/boxes.svelte"
@@ -15,6 +15,7 @@
 
     let vListElement: InstanceType<typeof CustomVList> & SvelteComponentTyped<any>
     let activelyScrolling = $state(false)
+    let virtuaScrolling = $state(false)
     
     let fixedWidth: boolean = $state(false)
     
@@ -36,7 +37,7 @@
     const rowHeight = 1.375
     let listRendered = $state(false)
     let rowHeightPx: number | null = $state(null)
-
+    
     const visibleRows = new Set<number>()
     const pendingChunkLoad = new Set<number>()
     const pendingChunkUnsub = new Set<number>()
@@ -45,7 +46,13 @@
     let indexInput: number | undefined = $state()
     let searchedIndex = $derived(indexInput != null ? indexInput - 1 : null)
     let searchedRowIndex = $derived(searchedIndex != null && perRow != null ? Math.ceil(searchedIndex / perRow) : null)
+    $effect(() => { if (!virtuaScrolling) { searchPending = false } })
 
+    let renderRows = $derived(listRendered && (virtuaScrolling && activelyScrolling || !virtuaScrolling) && !searchPending)
+    // $inspect(activelyScrolling)
+    // $inspect(renderRows)
+    // $effect(() => { console.log(`[${renderRows}]    ${listRendered}  (${virtuaScrolling} && ${activelyScrolling} || ${!virtuaScrolling})  ${!searchPending}`) })
+    
     onMount(() => {
         calculateNumbers()
         onConditionMet(() => boxes.rsocket.isConnected, () => {
@@ -84,10 +91,10 @@
         }
 
         visibleRows.add(rowIndex)
-        if (rowIndex === searchedRowIndex) {
-            console.log(`Moved to searched row index.`)
-            searchPending = false
-        }
+        // if (rowIndex === searchedRowIndex) {
+        //     console.log(`Moved to searched row index.`)
+        //     searchPending = false
+        // }
 
         const box = Math.max(rowIndex - 1, 0) * perRow
         const chunk = chunkIndexOf(box)
@@ -127,28 +134,18 @@
     }
 
     function submit_goToIndex() {
-        searchPending = true
-        setTimeout(() => {
-            if (searchPending) {
-                console.log(`Virtua index search timeout (10 seconds).`)
-                searchPending = false
-            }
-        }, 10000)
-    }
-
-    function onSearchOverlayVisible() {
         if (indexInput == null || searchedIndex == null || perRow == null || searchedRowIndex == null) {
             console.log(`Something is null - ${indexInput}, ${searchedIndex}, ${perRow}, ${searchedRowIndex}`)
             searchPending = false
             return
         }
         if (visibleRows.has(searchedRowIndex)) {
-            searchPending = false
             return console.log(`Row is already visible`)
         }
 
+        searchPending = true
         if (vListElement) {
-            const virtuaIndex = Math.max((searchedRowIndex / ROWS_PER) - 2, 0)
+            const virtuaIndex = Math.ceil(Math.max((searchedRowIndex / ROWS_PER) - 2, 0))
             console.log(`Going to checkbox: ${searchedIndex}. Row ${searchedRowIndex}.\n(Scrolling to row ${virtuaIndex})`)
 
             // Add 10 rows because Virtua scrolls wrong
@@ -176,6 +173,7 @@
         listRendered = true
     }
     
+    // $effect(() => { console.log(`Virtua: ${virtuaScrolling}\nActive: ${activelyScrolling}`) })
 </script>
 
 <svelte:window on:resize={debouncedResize}></svelte:window>
@@ -216,20 +214,20 @@
                 <p>fixed</p>
             </div>
             
-            {#if searchPending}
-                <div use:onElementVisible={onSearchOverlayVisible} class="absolute top-0 left-0 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center border-t border-x border-neutral-500 dark:border-neutral-700 size-full">
-                    <p>Searching...</p>
-                </div>
-            {/if}
+            <!--{#if searchPending}-->
+            <!--    <div use:onElementVisible={onSearchOverlayVisible} class="absolute top-0 left-0 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center border-t border-x border-neutral-500 dark:border-neutral-700 size-full">-->
+            <!--        <p>Searching...</p>-->
+            <!--    </div>-->
+            <!--{/if}-->
             
             <input required readonly={searchPending} bind:value={indexInput} max="1000000000" min="1" title="Enter checkbox number to navigate to" type="number" class="w-[13ch] h-full px-[0.5ch] bg-neutral-900 focus-outline-500" placeholder="12345">
             <button type="submit" class="hover:underline hover:text-blue-500">Go</button>
         </form>
     </div>
     
-        <CustomVList bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
+        <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
             {#snippet children(_, _index)}
-                {#if listRendered && !searchPending}
+                {#if renderRows}
                     {@const baseIndex = _index * 5}
                     {@render row(baseIndex)}
                     {@render row(baseIndex + 1)}

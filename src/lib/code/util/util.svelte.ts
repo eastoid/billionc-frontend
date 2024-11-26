@@ -502,3 +502,7 @@ export function usePrint(_: HTMLElement, m: [any, any]) { console.log(m[0]); ret
 export function getOrDefault<T, O>(value: T | null, def: O): T | O {
     return value ? value : def
 }
+
+export function printFunc(...prints: any[]) {
+    return () => { console.log(...prints) }
+}

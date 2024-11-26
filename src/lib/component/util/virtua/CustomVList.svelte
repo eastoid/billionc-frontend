@@ -86,21 +86,79 @@
     
     const headerHeight = $derived(isBreakpointActive("sm") ? remToPx(4) : remToPx(2))
     
+    // virtuaScrolling - Boolean value (if virtua is actively scrolling)
+    let holdingWheel = $state(false)
+    let scrolling = $state(false)
+    let manualScrolling = $state(false)
+    let virtuaScrolling = $state(false)
+    
+    function setScrolling(v: boolean) { activelyScrolling = v }
+    $effect(() => {
+        // console.log(`${scrolling} || ${virtuaScrolling}\n${manualScrolling} || ${holdingWheel}`)
+        if (!scrolling && !virtuaScrolling) {
+            setScrolling(false)
+            // return false
+        }
+
+        if (manualScrolling || holdingWheel) {
+            setScrolling(true)
+            // return true
+        }
+
+        setScrolling(false)
+        // return false
+    })
+    
     function onScrollStart() {
-        activelyScrolling = true
+        console.log(`on scroll start`)
+        // activelyScrolling = true
+        scrolling = true
     }
     
     function onScrollEnd() {
-        activelyScrolling = false
+        console.log(`on scroll end`)
+        // activelyScrolling = false
+        scrolling = false
+        manualScrolling = false
+        // wheelClicked
     }
     
+    function onWheel() {
+        console.log(`on wheel`)
+        // activelyScrolling = true
+        manualScrolling = true
+    }
+    
+    function onMouseDown(e: MouseEvent) {
+        console.log(`on mouse down`)
+        if (e.button === 1) {
+            holdingWheel = true
+        }
+    }
+    
+    function onMouseUp(e: MouseEvent) {
+        console.log(`on mouse up`)
+        holdingWheel = false
+    }
+    
+    function virtua_onScrollStart(offset: number) {
+        console.log(`virtua on scroll start`)
+        virtuaScrolling = true
+        if (onscroll) onscroll(offset)
+    }
+
+    function virtua_onScrollEnd() {
+        console.log(`virtua on scroll end`)
+        virtuaScrolling = false
+        if (onscrollend) onscrollend()
+    }
 </script>
 
 <!--
   @component
   Virtualized list component. See {@link VListProps} and {@link VListHandle}.
 -->
-<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" use:handleScrolling={{onScrollStart, onScrollEnd}}>
+<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" on:mouseup={onMouseUp} on:mousedown={onMouseDown} on:wheel={onWheel} on:scroll={onScrollStart} on:scrollend={onScrollEnd}>
     <!-- hero -->
     <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 sm:grid-cols-[1fr_auto] justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">
         <div class="sm:col-span-1">
@@ -130,8 +188,8 @@
         {itemSize}
         {shift}
         {horizontal}
-        {onscroll}
-        {onscrollend}
+        onscroll={virtua_onScrollStart}
+        onscrollend={virtua_onScrollEnd}
     />
     
     <footer class="flex px-2 py-1 justify-center">

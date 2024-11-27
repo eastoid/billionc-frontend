@@ -109,10 +109,10 @@
     function handle_scrollStart() {
         scrolling = true
         if (scrollModifier) {
-            console.log(`Scrolling with modifier!`)
+            // console.log(`Scrolling with modifier!`)
             activelyScrolling = true
         } else {
-            console.log(`Scrolling WITHOUT modifier.`)
+            // console.log(`Scrolling WITHOUT modifier.`)
         }
     }
     

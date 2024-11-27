@@ -91,13 +91,9 @@
         }
 
         visibleRows.add(rowIndex)
-        // if (rowIndex === searchedRowIndex) {
-        //     console.log(`Moved to searched row index.`)
-        //     searchPending = false
-        // }
 
-        const box = Math.max(rowIndex - 1, 0) * perRow
-        const chunk = chunkIndexOf(box)
+        const box = Math.min(Math.max(rowIndex - 1, 0) * perRow, 999_999_999) // First checkbox index for row
+        const chunk = chunkIndexOf(box) // Chunk index
         
         const timeout = setTimeout(() => { processVisibleRow(chunk) }, 100)
 
@@ -173,20 +169,6 @@
         listRendered = true
     }
     
-    let previous = renderRows
-    function shouldRenderRows(_: any) {
-        return _
-        
-        if (renderRows) {
-            previous = true
-            return true
-        } else {}
-        
-        if (previous) {
-            return true
-        }
-    }
-    
 </script>
 
 <svelte:window on:resize={debouncedResize}></svelte:window>
@@ -212,7 +194,6 @@
                            class=""
                            title={`${boxIndex + 1}`}
                     />
-                    <!-- class:box-millionth={(realIndex) % 1_000_000 === 0} -->
                 {/if}
             {/each}
         {/key}
@@ -227,12 +208,6 @@
                 <p>fixed</p>
             </div>
             
-            <!--{#if searchPending}-->
-            <!--    <div use:onElementVisible={onSearchOverlayVisible} class="absolute top-0 left-0 bg-neutral-200 dark:bg-neutral-800 flex items-center justify-center border-t border-x border-neutral-500 dark:border-neutral-700 size-full">-->
-            <!--        <p>Searching...</p>-->
-            <!--    </div>-->
-            <!--{/if}-->
-            
             <input required readonly={searchPending} bind:value={indexInput} max="1000000000" min="1" title="Enter checkbox number to navigate to" type="number" class="w-[13ch] h-full px-[0.5ch] bg-neutral-900 focus-outline-500" placeholder="12345">
             <button type="submit" class="hover:underline hover:text-blue-500">Go</button>
         </form>
@@ -240,7 +215,7 @@
     
         <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
             {#snippet children(_, _index)}
-                {#if shouldRenderRows(renderRows)}
+                {#if renderRows}
                     {@const baseIndex = _index * 5}
                     <div class="c">
                         {@render row(baseIndex)}
@@ -270,7 +245,7 @@
     /* Containers */
     /* Row container */
     :global(.r) {
-        @apply w-full flex gap-x-[0.125rem] py-[0.0625rem] justify-center h-[1.375rem] shrink-0 box-border;
+        @apply w-full flex gap-x-[0.125rem] py-[0.0625rem] justify-center h-[1.375rem];
     }
     :global(.fr) {
         width: fit-content !important;

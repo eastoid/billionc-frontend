@@ -229,7 +229,7 @@
     
     <!-- CHECKBOXES -->
     <div class="w-full flex-grow">
-        <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
+        <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={2} itemSize={1}>
             {#snippet children(_, _index)}
                 {#if renderRows}
                     {@const baseIndex = _index * 5}

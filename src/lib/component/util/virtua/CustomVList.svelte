@@ -8,6 +8,7 @@
     import {boxes} from "$lib/code/state/boxes.svelte"
     import {notification} from "$lib/code/util/notification"
     import {handleScrolling, isBreakpointActive} from "$lib/code/util/ui"
+    import {dev} from "$app/environment"
 
     interface Props extends VListProps<T> {
         classes: string;
@@ -85,71 +86,80 @@
     });
     
     const headerHeight = $derived(isBreakpointActive("sm") ? remToPx(4) : remToPx(2))
-    
-    // virtuaScrolling - Boolean value (if virtua is actively scrolling)
-    let holdingWheel = $state(false)
+
+
     let scrolling = $state(false)
-    let manualScrolling = $state(false)
-    let virtuaScrolling = $state(false)
     
-    function setScrolling(v: boolean) { activelyScrolling = v }
-    $effect(() => {
-        // console.log(`${scrolling} || ${virtuaScrolling}\n${manualScrolling} || ${holdingWheel}`)
-        if (!scrolling && !virtuaScrolling) {
-            setScrolling(false)
-            // return false
+    let modifierTimeout: NodeJS.Timeout | null = null;
+    let scrollModifier: 1 | 2 | null = $state(null) // 1 = instant, 2 = slow scrolling
+    function setScrollModifier(type: typeof scrollModifier) {
+        // console.log(`Set scroll modifier`)
+        if (modifierTimeout) clearTimeout(modifierTimeout)
+        
+        scrollModifier = type
+        
+        if (type === 1) {
+            modifierTimeout = setTimeout(() => {
+                if (scrolling) return
+                scrollModifier = null
+            }, 50)
         }
-
-        if (manualScrolling || holdingWheel) {
-            setScrolling(true)
-            // return true
+    }
+    
+    function handle_scrollStart() {
+        scrolling = true
+        if (scrollModifier) {
+            console.log(`Scrolling with modifier!`)
+            activelyScrolling = true
+        } else {
+            console.log(`Scrolling WITHOUT modifier.`)
         }
-
-        setScrolling(false)
-        // return false
-    })
+    }
+    
+    function handle_scrollEnd() {
+        scrolling = false
+        activelyScrolling = false
+        if (scrollModifier === 1) scrollModifier = null
+    }
     
     function onScrollStart() {
-        console.log(`on scroll start`)
-        // activelyScrolling = true
-        scrolling = true
+        // console.log(`on scroll start`)
+        // handle_scrollStart()
     }
     
     function onScrollEnd() {
-        console.log(`on scroll end`)
-        // activelyScrolling = false
-        scrolling = false
-        manualScrolling = false
-        // wheelClicked
+        // console.log(`on scroll end`)
+        // handle_scrollEnd()
     }
     
     function onWheel() {
-        console.log(`on wheel`)
-        // activelyScrolling = true
-        manualScrolling = true
+        // console.log(`on wheel`)
+        setScrollModifier(1)
     }
     
     function onMouseDown(e: MouseEvent) {
-        console.log(`on mouse down`)
+        // console.log(`on mouse down`)
         if (e.button === 1) {
-            holdingWheel = true
+            setScrollModifier(2)
         }
     }
     
     function onMouseUp(e: MouseEvent) {
-        console.log(`on mouse up`)
-        holdingWheel = false
+        // console.log(`on mouse up`)
+        if (e.button === 1) {
+            scrollModifier = null
+        }
     }
     
     function virtua_onScrollStart(offset: number) {
-        console.log(`virtua on scroll start`)
-        virtuaScrolling = true
+        // console.log(`virtua on scroll start`)
+        handle_scrollStart()
         if (onscroll) onscroll(offset)
     }
 
     function virtua_onScrollEnd() {
-        console.log(`virtua on scroll end`)
-        virtuaScrolling = false
+        // console.log(`virtua on scroll end`)
+        handle_scrollEnd()
         if (onscrollend) onscrollend()
     }
 </script>
@@ -158,6 +168,13 @@
   @component
   Virtualized list component. See {@link VListProps} and {@link VListHandle}.
 -->
+
+<!--{#if dev}-->
+<!--    <div class="size-[200px] fixed bottom-0 left-0 z-50 border border-neutral-500 rounded-tl-3xl flex flex-col">-->
+<!--        <div class="w-full h-1/2 {scrolling ? 'bg-green-600' : 'bg-neutral-700'} flex items-center justify-center">Scrolling</div>-->
+<!--        <div class="w-full h-1/2 {scrollModifier ? 'bg-green-600' : 'bg-neutral-700'} flex items-center justify-center">Modifier</div>-->
+<!--    </div>-->
+<!--{/if}-->
 <div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" on:mouseup={onMouseUp} on:mousedown={onMouseDown} on:wheel={onWheel} on:scroll={onScrollStart} on:scrollend={onScrollEnd}>
     <!-- hero -->
     <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 sm:grid-cols-[1fr_auto] justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">

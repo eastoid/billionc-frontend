@@ -173,7 +173,20 @@
         listRendered = true
     }
     
-    // $effect(() => { console.log(`Virtua: ${virtuaScrolling}\nActive: ${activelyScrolling}`) })
+    let previous = renderRows
+    function shouldRenderRows(_: any) {
+        return _
+        
+        if (renderRows) {
+            previous = true
+            return true
+        } else {}
+        
+        if (previous) {
+            return true
+        }
+    }
+    
 </script>
 
 <svelte:window on:resize={debouncedResize}></svelte:window>
@@ -227,13 +240,15 @@
     
         <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
             {#snippet children(_, _index)}
-                {#if renderRows}
+                {#if shouldRenderRows(renderRows)}
                     {@const baseIndex = _index * 5}
-                    {@render row(baseIndex)}
-                    {@render row(baseIndex + 1)}
-                    {@render row(baseIndex + 2)}
-                    {@render row(baseIndex + 3)}
-                    {@render row(baseIndex + 4)}
+                    <div class="c">
+                        {@render row(baseIndex)}
+                        {@render row(baseIndex + 1)}
+                        {@render row(baseIndex + 2)}
+                        {@render row(baseIndex + 3)}
+                        {@render row(baseIndex + 4)}
+                    </div>
                 {:else}
                     <div class="p"></div>
                 {/if}
@@ -255,7 +270,7 @@
     /* Containers */
     /* Row container */
     :global(.r) {
-        @apply w-full flex gap-[0.125rem] py-[0.0625rem] justify-center h-[1.375rem];
+        @apply w-full flex gap-x-[0.125rem] py-[0.0625rem] justify-center h-[1.375rem] shrink-0 box-border;
     }
     :global(.fr) {
         width: fit-content !important;
@@ -264,6 +279,11 @@
     
     :global(.p) {
         height: calc(1.375rem * 5);
+    }
+
+    :global(.c) {
+        height: calc(1.375rem * 5);
+        @apply w-full flex flex-col;
     }
     /* Thousandth row */
     :global(.thousand) {

@@ -151,6 +151,14 @@
         }
     }
     
+    function onPointerDown(e: PointerEvent) {
+        setScrollModifier(2)
+    }
+
+    function onPointerUp(e: PointerEvent) {
+        scrollModifier = null
+    }
+    
     function virtua_onScrollStart(offset: number) {
         // console.log(`virtua on scroll start`)
         handle_scrollStart()
@@ -168,28 +176,13 @@
   @component
   Virtualized list component. See {@link VListProps} and {@link VListHandle}.
 -->
-
-<!--{#if dev}-->
-<!--    <div class="size-[200px] fixed bottom-0 left-0 z-50 border border-neutral-500 rounded-tl-3xl flex flex-col">-->
-<!--        <div class="w-full h-1/2 {scrolling ? 'bg-green-600' : 'bg-neutral-700'} flex items-center justify-center">Scrolling</div>-->
-<!--        <div class="w-full h-1/2 {scrollModifier ? 'bg-green-600' : 'bg-neutral-700'} flex items-center justify-center">Modifier</div>-->
-<!--    </div>-->
-<!--{/if}-->
-<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" on:mouseup={onMouseUp} on:mousedown={onMouseDown} on:wheel={onWheel} on:scroll={onScrollStart} on:scrollend={onScrollEnd}>
+<div {...rest} style={`${viewportStyle} ${rest.style || ""}`} class="containeroid {classes}" on:pointerdown={onPointerDown} on:pointerup={onPointerUp} on:mouseup={onMouseUp} on:mousedown={onMouseDown} on:wheel={onWheel} on:scroll={onScrollStart} on:scrollend={onScrollEnd}>
     <!-- hero -->
-    <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 grid grid-cols-[auto_1fr_auto_auto] sm:grid-cols-2 sm:grid-cols-[1fr_auto] justify-center align-middle gap-2 h-[2rem] sm:h-[4rem]">
-        <div class="sm:col-span-1">
+    <header use:onElementVisible={onHeaderVisible} class="px-2 py-1 flex justify-between items-center gap-2 h-[2rem]">
+        <div class="">
             <h1>One billion checkboxes</h1>
         </div>
-        <div class="sm:order-3 flex justify-center sm:justify-start gap-6 xcol-span-2">
-            <p title="Global click count: {getOrDefault(boxes.clickCount, 'Unknown')}" class="size-fit">{boxes.clickCount} <span class="hidden sm:inline">☛</span><span class="sm:hidden">clicks</span></p>
-            <p title="Global boxes checked: {getOrDefault(boxes.checkedCount, 'Unknown')}" class="size-fit">{boxes.checkedCount} <span class="hidden sm:inline">✓</span><span class="sm:hidden">checked</span></p>
-            <p title="Online users: {getOrDefault(boxes.userCount, 'Unknown')}" class="size-fit">{boxes.userCount} <span class="hidden sm:inline">웃</span><span class="sm:hidden">{boxes.userCount === 1 ? 'person' : 'people'}</span></p>
-        </div>
-        <div class="sm:order-4 flex sm:justify-end w-fit">
-            <button title="Enable {site.lightMode ? 'dark' : 'light'} mode" on:click={() => { site.lightMode = !site.lightMode }} class="px-2 rounded bg-neutral-800 text-neutral-100"><span class="sm:hidden">Toggle</span> {site.lightMode ? 'dark' : 'light'} theme</button>
-        </div>
-        <div class="flex justify-end sm:order-2 sm:col-span-1">
+        <div class="flex justify-end">
             <a title="Website author" target="_blank" href="https://koza.dev" class="text-neutral-500 hover:underline hover:text-blue-500">By koza.dev</a>
         </div>
     </header>

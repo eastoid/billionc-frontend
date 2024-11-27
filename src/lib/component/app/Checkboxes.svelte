@@ -1,12 +1,13 @@
 <script lang="ts">
     import {onMount, type SvelteComponentTyped} from "svelte"
     import {boxesThatFit, remToPx} from "$lib/code/checkboxes"
-    import {debounceFunction, onConditionMet, onElementVisible, printFunc, rap, usePrint} from "$lib/code/util/util.svelte"
+    import {debounceFunction, getOrDefault, onConditionMet, onElementVisible, printFunc, rap, usePrint} from "$lib/code/util/util.svelte"
     import CustomVList from "$lib/component/util/virtua/CustomVList.svelte"
     import {boxes_loadChunk, boxes_unsubscribeChunk} from "$lib/code/checkboxes/loading"
     import {boxes} from "$lib/code/state/boxes.svelte"
     import {loadMetadata, updateCheckbox} from "$lib/code/checkboxes/actions"
     import {CHUNK_SIZE, chunkIndexOf} from "$lib/code/checkboxes/util"
+    import {site} from "$lib/code/state/site.svelte"
 
     const CHUNK_COUNT = 5_000_000
     const BOX_COUNT = 1_000_000_000
@@ -201,6 +202,7 @@
 {/snippet}
 
 {#if rowCount != null && perRow != null && rowHeightPx && rowCountArray && boxes.rsocket.isConnected}
+    <!-- FLOATING ITEM -->
     <div class="fixed flex pointer-events-none w-full h-[100svh] items-end justify-end z-10 top-0 left-0 pr-[10px] text-left">
         <form class="relative w-fit flex items-center bg-neutral-200 dark:bg-neutral-800 border-t border-x border-neutral-500 dark:border-neutral-700 px-1 py-1 rounded-t-md pointer-events-auto gap-x-1 h-[2rem]" on:submit={submit_goToIndex}>
             <div title="Enable fixed width for checkboxes" class="flex gap-1 px-1 select-none">
@@ -213,6 +215,20 @@
         </form>
     </div>
     
+    <!-- HEADER -->
+    <div class="w-full h-[2rem] shrink-0 px-2 py-1 flex items-center justify-between">
+        <div class="flex justify-center sm:justify-start gap-6">
+            <p title="Global click count: {getOrDefault(boxes.clickCount, 'Unknown')}" class="size-fit">{boxes.clickCount} <span class="hidden sm:inline">☛</span><span class="sm:hidden">clicks</span></p>
+            <p title="Global boxes checked: {getOrDefault(boxes.checkedCount, 'Unknown')}" class="size-fit">{boxes.checkedCount} <span class="hidden sm:inline">✓</span><span class="sm:hidden">checked</span></p>
+            <p title="Online users: {getOrDefault(boxes.userCount, 'Unknown')}" class="size-fit">{boxes.userCount} <span class="hidden sm:inline">웃</span><span class="sm:hidden">{boxes.userCount === 1 ? 'person' : 'people'}</span></p>
+        </div>
+        <div class="flex w-fit">
+            <button title="Enable {site.lightMode ? 'dark' : 'light'} mode" on:click={() => { site.lightMode = !site.lightMode }} class="px-2 rounded bg-neutral-800 text-neutral-100"><span class="sm:hidden">Toggle</span> {site.lightMode ? 'dark' : 'light'} theme</button>
+        </div>
+    </div>
+    
+    <!-- CHECKBOXES -->
+    <div class="w-full flex-grow">
         <CustomVList onscroll={()=>{ virtuaScrolling = true }} onscrollend={()=>{ virtuaScrolling = false }} bind:activelyScrolling={activelyScrolling} {onHeaderVisible} bind:this={vListElement} data={rowCountArray} style={``} getKey={(_, i) => i} classes={"scrollbar-10 scrollbar-stable box-border checkbox-styles"} overscan={1} itemSize={1}>
             {#snippet children(_, _index)}
                 {#if renderRows}
@@ -229,6 +245,7 @@
                 {/if}
             {/snippet}
         </CustomVList>
+    </div>
 {:else}
     <div class="w-full flex flex-col items-center justify-center h-[100svh] gap-8">
         <div class="flex flex-col items-center">

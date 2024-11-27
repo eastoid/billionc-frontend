@@ -20,7 +20,7 @@
 </script>
 
 
-<div class="w-full h-full flex">
+<div class="w-full h-full flex flex-col">
     {#if !boxes.limitedSession}
         <Checkboxes></Checkboxes>
     {:else}
